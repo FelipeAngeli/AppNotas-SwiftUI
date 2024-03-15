@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct RegisterView: View {
     
@@ -14,6 +15,7 @@ struct RegisterView: View {
     @State var confirmPassword: String = ""
     @State var isPresentAlert: Bool = false
     @State var goNotes: Bool = false
+    @State var errorMessage: String = ""
     
     var body: some View {
             ZStack{
@@ -24,11 +26,9 @@ struct RegisterView: View {
                         .foregroundStyle(.white)
                         .padding(.top, 5)
                         .padding(.bottom, 50)
-                    Group{
-                        
+                    Group{                        
                         TextField("", text: $email, prompt: Text("E-mail").foregroundStyle(.white))
                             .keyboardType(.emailAddress)
-                        
                         SecureField("", text: $password, prompt: Text("Password").foregroundStyle(.white))
                         SecureField("", text: $confirmPassword, prompt: Text("Confirm Password").foregroundStyle(.white))
                         
@@ -46,11 +46,7 @@ struct RegisterView: View {
                     Spacer()
                     
                     Button{
-                        if password == confirmPassword {
-                            goNotes.toggle()
-                        } else {
-                            isPresentAlert.toggle()
-                        }
+                        registerUser()
                     } label: {
                         Text("Register")
                             .frame(height: 45)
@@ -61,18 +57,13 @@ struct RegisterView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                     .disabled(isDisableButton)
-                    
-                    
-                 
                     .padding(.bottom, 50)
                 }
-              
-          
         }
             .alert("Attencio", isPresented: $isPresentAlert) {
                 Button("OK", role: .cancel) {}
             } message: {
-                Text("Check password and confirm password and try again")
+                Text(errorMessage)
             }
 
             .navigationDestination(isPresented: $goNotes) {
@@ -84,6 +75,23 @@ struct RegisterView: View {
         password.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
         confirmPassword.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
+    
+    //registro firebase
+    private func registerUser() {
+        if password == confirmPassword {
+            Auth.auth().createUser(withEmail: email, password: password) { result, error in
+                if let error {
+                    errorMessage = error.localizedDescription
+                    isPresentAlert.toggle()
+                } else {
+                    goNotes.toggle()
+                }
+            }
+        } else {
+            errorMessage = "Check password and confirm password and try again"
+            isPresentAlert.toggle()
+        }
+    }
 }
 
 #Preview {
