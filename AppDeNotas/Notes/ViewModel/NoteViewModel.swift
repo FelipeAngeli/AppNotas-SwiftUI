@@ -7,8 +7,11 @@
 
 import Foundation
 
-class NoteViewModel: ObservableObject {
-    @Published var note: [Note] = [] {
+@Observable
+class NoteViewModel {
+    
+    //observa se tem mudança
+     var note: [Note] = [] {
         didSet {
             saveNotes() // salva as alteraçoes
         }
